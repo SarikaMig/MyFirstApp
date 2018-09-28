@@ -1,0 +1,80 @@
+buildscript {
+	ext {
+		springBootVersion = '2.0.5.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		 jcenter()
+		  maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:1.5.2")
+	    classpath "io.ratpack:ratpack-gradle:1.0.0"
+        classpath "org.ajoberstar:gradle-git:1.2.0"
+        classpath "com.bertramlabs.plugins:asset-pipeline-gradle:2.5.8"
+        classpath "com.bertramlabs.plugins:less-asset-pipeline:2.5.4"
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.gorylenko.gradle-git-properties'
+//apply plugin: 'org.ajoberstar.release-opinion'
+//apply plugin: 'org.ajoberstar.release-base'
+
+ ext {
+    // Open the Git repository in the current directory.
+ //   git = org.ajoberstar.grgit.Grgit.open(file('.'))
+ git = org.ajoberstar.grgit.Grgit.open(currentDir: project.file('.'))
+
+    // Get commit id of HEAD.
+    revision = git.head().id
+    // Alternative is using abbreviatedId of head() method.
+    // revision = git.head().abbreviatedId
+}
+
+// Use abbreviatedId commit id in the version.
+version = "2.0.1.${git.head().abbreviatedId}"
+
+// application plugin extension properties.
+mainClassName = 'sample.Hello'
+applicationName = 'sample'
+
+// Customize applicationDistribution
+// CopySpec from application plugin extension.
+applicationDistribution.with {
+    from('src/dist') {
+        include 'VERSION'
+        expand(
+            buildDate: new Date(), 
+            // Use revision with Git commit id:
+            revision : revision,
+            version  : project.version,
+            appName  : applicationName)
+    }
+}
+ 
+group = 'com.test'
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+springBoot {
+      buildInfo() {
+      
+    }
+}
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	compile('org.springframework.boot:spring-boot-starter-web')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+    
+}
